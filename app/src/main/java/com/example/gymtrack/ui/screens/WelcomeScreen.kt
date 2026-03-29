@@ -46,7 +46,7 @@ fun WelcomeScreen() {
             text = "Welcome to GymTrack",
             color = White,
             fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.headlineLarge,
             textAlign = TextAlign.Center
         )
 
@@ -54,6 +54,7 @@ fun WelcomeScreen() {
         Text(
             text = "Before you can start tracking your stats, you need to create a profile.",
             color = Silver,
+            style = MaterialTheme.typography.bodyLarge,
             fontSize = 18.sp,
             lineHeight = 26.sp,
             textAlign = TextAlign.Center,
@@ -80,6 +81,7 @@ fun WelcomeScreen() {
                     text = "Create your profile",
                     color = White,
                     fontSize = 20.sp,
+                    style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.ExtraBold
                 )
                 Spacer(modifier = Modifier.width(12.dp))
