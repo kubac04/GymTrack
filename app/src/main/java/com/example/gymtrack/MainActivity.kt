@@ -4,15 +4,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.runtime.*
+import com.example.gymtrack.ui.screens.ProfileScreen
+import com.example.gymtrack.ui.screens.WelcomeScreen
 import com.example.gymtrack.ui.theme.GymTrackTheme
-import com.example.gymtrack.ui.screens.*
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,31 +15,21 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             GymTrackTheme {
-//                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-//                    Greeting(
-//                        name = "Android",
-//                        modifier = Modifier.padding(innerPadding)
-//                    )
-//                }
-                WelcomeScreen()
+                var currentScreen by remember { mutableStateOf("welcome") }
+                when (currentScreen) {
+                    "welcome" -> {
+                        WelcomeScreen(onNextClick = {
+                            currentScreen = "profile"
+                        })
+                    }
+                    "profile" -> {
+                        ProfileScreen(onNextClick = {
+                            // Narazie pętla , potem to trzeba zmienić do innego obrazu ( Main Menu)
+                            currentScreen = "welcome"
+                        })
+                    }
+                }
             }
         }
     }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-//    GymTrackTheme {
-//        Greeting("Android")
-//    }
-    WelcomeScreenPreview()
 }

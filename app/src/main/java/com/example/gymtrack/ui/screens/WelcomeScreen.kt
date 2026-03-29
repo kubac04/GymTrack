@@ -21,7 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 
 @Composable
-fun WelcomeScreen() {
+fun WelcomeScreen(onNextClick: () -> Unit = {}) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -66,7 +66,7 @@ fun WelcomeScreen() {
 
         // Przycisk
         Button(
-            onClick = {},
+            onClick = onNextClick,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(64.dp),
@@ -97,33 +97,6 @@ fun WelcomeScreen() {
         Spacer(modifier = Modifier.height(24.dp))
     }
 }
-//fun WelcomeScreen() {
-//    Column(modifier = Modifier.padding(16.dp)) {
-//        Text(text = "Welcome to GymTrack App")
-//
-//        Spacer(modifier = Modifier.height(8.dp))
-//
-//        Text(text = "Before you can start tracking your stats, you need to create a profile.")
-//
-//        Spacer(modifier = Modifier.height(16.dp))
-//
-//        Button(
-//            onClick = {},
-//            colors = ButtonDefaults.buttonColors(containerColor = MahoganyRed),
-//            shape = RoundedCornerShape(100)
-//        ) {
-//            Row(verticalAlignment = Alignment.CenterVertically) {
-//                Text(text = "Create your profile", color = White)
-//                Spacer(modifier = Modifier.width(8.dp))
-//                Icon(
-//                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-//                    contentDescription = "Arrow",
-//                    tint = White
-//                )
-//            }
-//        }
-//    }
-//}
 
 @Preview(showBackground = true)
 @Composable
