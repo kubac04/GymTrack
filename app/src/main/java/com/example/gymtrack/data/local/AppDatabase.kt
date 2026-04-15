@@ -3,13 +3,16 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.example.gymtrack.data.local.dao.TrainingDao
+import com.example.gymtrack.data.local.dao.UserDao
+import com.example.gymtrack.data.local.entity.TrainingEntity
+import com.example.gymtrack.data.local.entity.UserEntity
 
-@Database(entities = [User::class, Training::class], version = 1)
+@Database(entities = [UserEntity::class, TrainingEntity::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun trainingDao(): TrainingDao
 
-    // GEMINI DO SPRAWDZENIA
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null
