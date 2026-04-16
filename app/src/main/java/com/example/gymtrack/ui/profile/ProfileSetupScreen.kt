@@ -1,4 +1,4 @@
-package com.example.gymtrack.ui.screens
+package com.example.gymtrack.ui.profile
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

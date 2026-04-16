@@ -5,11 +5,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.*
-import com.example.gymtrack.ui.screens.ProfileScreen
-import com.example.gymtrack.ui.screens.WelcomeScreen
+import com.example.gymtrack.ui.profile.ProfileScreen
+import com.example.gymtrack.ui.welcome.WelcomeScreen
 import com.example.gymtrack.ui.theme.GymTrackTheme
 
-class MainActivity : ComponentActivity() {
+class GymTrackApplication : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

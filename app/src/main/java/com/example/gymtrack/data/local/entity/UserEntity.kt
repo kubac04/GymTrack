@@ -1,4 +1,5 @@
 package com.example.gymtrack.data.local.entity
+
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.ColumnInfo
