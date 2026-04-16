@@ -26,11 +26,14 @@ import com.example.gymtrack.R
 import com.example.gymtrack.ui.theme.*
 
 @Composable
-fun ProfileScreen(onNextClick: () -> Unit = {}) {
-    // Zapisanie zmiennych by się odświeżały i np przy obruceniu ekranu nie były resetowane
+fun ProfileScreen(
+    viewModel: ProfileViewModel? = null,
+    onNextClick: () -> Unit = {}
+) {
     var firstName by remember { mutableStateOf("") }
     var weight by remember { mutableStateOf("") }
     var height by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf("") }
     val scrollState = rememberScrollState()
 
     Column(
@@ -48,14 +51,12 @@ fun ProfileScreen(onNextClick: () -> Unit = {}) {
         ) {
             Spacer(modifier = Modifier.height(2.dp))
 
-            // Logo
             Image(
                 painter = painterResource(id = R.drawable.gymtrack_logo_white),
                 contentDescription = "GymTrack Logo",
                 modifier = Modifier.size(320.dp)
             )
 
-            // Ikona profilu użytkownika
             Icon(
                 imageVector = Icons.Default.AccountCircle,
                 contentDescription = "Profile Icon",
@@ -66,35 +67,54 @@ fun ProfileScreen(onNextClick: () -> Unit = {}) {
                     .clip(CircleShape)
             )
 
-
             Text(
                 text = "Enter your details:",
                 color = White,
-                style = MaterialTheme.typography.titleLarge, // Zgodne z Type.kt (Rubik SemiBold)
+                style = MaterialTheme.typography.titleLarge,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.offset(y = (-20).dp)
             )
 
             Spacer(modifier = Modifier.height(15.dp))
 
-            // Pola tekstowe
             Column(
                 modifier = Modifier.offset(y = (-10).dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 ProfileTextField(value = firstName, onValueChange = { firstName = it }, label = "First Name")
                 Spacer(modifier = Modifier.height(12.dp))
-                ProfileTextField(value = weight, onValueChange = { weight = it }, label = "Weight")
+                ProfileTextField(value = weight, onValueChange = { weight = it }, label = "Weight (kg)")
                 Spacer(modifier = Modifier.height(12.dp))
-                ProfileTextField(value = height, onValueChange = { height = it }, label = "Height")
+                ProfileTextField(value = height, onValueChange = { height = it }, label = "Height (cm)")
             }
-            
+
+            if (errorMessage.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = errorMessage,
+                    color = StrawberryRed,
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Center
+                )
+            }
+
             Spacer(modifier = Modifier.height(32.dp))
         }
 
-        // Przycisk Submit
         Button(
-            onClick = onNextClick,
+            onClick = {
+                if (firstName.isBlank()) {
+                    errorMessage = "Please enter your first name."
+                } else if (weight.toFloatOrNull() == null) {
+                    errorMessage = "Please enter a valid weight."
+                } else if (height.toIntOrNull() == null) {
+                    errorMessage = "Please enter a valid height."
+                } else {
+                    errorMessage = ""
+                    viewModel?.saveProfile(firstName.trim(), weight.trim(), height.trim())
+                    onNextClick()
+                }
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(64.dp),
@@ -120,7 +140,7 @@ fun ProfileScreen(onNextClick: () -> Unit = {}) {
                 )
             }
         }
-        
+
         Spacer(modifier = Modifier.height(24.dp))
     }
 }
@@ -130,14 +150,14 @@ fun ProfileTextField(value: String, onValueChange: (String) -> Unit, label: Stri
     TextField(
         value = value,
         onValueChange = onValueChange,
-        placeholder = { 
+        placeholder = {
             Text(
-                text = label, 
-                color = Color.Gray, 
-                modifier = Modifier.fillMaxWidth(), 
+                text = label,
+                color = Color.Gray,
+                modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodyLarge
-            ) 
+            )
         },
         modifier = Modifier
             .fillMaxWidth()

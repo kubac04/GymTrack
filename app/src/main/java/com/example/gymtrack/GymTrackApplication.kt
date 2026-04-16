@@ -1,35 +1,13 @@
 package com.example.gymtrack
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.*
-import com.example.gymtrack.ui.profile.ProfileScreen
-import com.example.gymtrack.ui.welcome.WelcomeScreen
-import com.example.gymtrack.ui.theme.GymTrackTheme
+import android.app.Application
+import com.example.gymtrack.data.local.AppDatabase
+import com.example.gymtrack.data.repository.UserRepository
+import com.example.gymtrack.data.repository.WorkoutRepository
+// Definicja Bazy Danych i repozytoriów ( nw do końca po co ten plik ale musi być tak jak cloude ci napisał wtedy xd)
+class GymTrackApplication : Application() {
 
-class GymTrackApplication : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            GymTrackTheme {
-                var currentScreen by remember { mutableStateOf("welcome") }
-                when (currentScreen) {
-                    "welcome" -> {
-                        WelcomeScreen(onNextClick = {
-                            currentScreen = "profile"
-                        })
-                    }
-                    "profile" -> {
-                        ProfileScreen(onNextClick = {
-                            // Narazie pętla , potem to trzeba zmienić do innego obrazu ( Main Menu)
-                            currentScreen = "welcome"
-                        })
-                    }
-                }
-            }
-        }
-    }
+    val database: AppDatabase by lazy { AppDatabase.getDatabase(this) }
+    val userRepository: UserRepository by lazy { UserRepository(database.userDao()) }
+    val workoutRepository: WorkoutRepository by lazy { WorkoutRepository(database.workoutDao()) }
 }
