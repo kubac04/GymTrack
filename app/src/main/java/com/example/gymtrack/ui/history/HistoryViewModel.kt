@@ -28,6 +28,12 @@ class HistoryViewModel(private val workoutRepository: WorkoutRepository) : ViewM
         }
     }
 
+    fun toggleWorkoutCompletion(workout: WorkoutEntity) {
+        viewModelScope.launch {
+            workoutRepository.updateWorkout(workout.copy(isCompleted = !workout.isCompleted))
+        }
+    }
+
     fun deleteWorkout(workout: WorkoutEntity) {
         viewModelScope.launch {
             workoutRepository.deleteWorkout(workout)

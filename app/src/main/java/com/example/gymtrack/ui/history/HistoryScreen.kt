@@ -33,6 +33,7 @@ fun HistoryScreen(
     HistoryScreenContent(
         workouts = workouts,
         onAddWorkout = { title -> viewModel.addWorkout(title) },
+        onToggleWorkout = { workout -> viewModel.toggleWorkoutCompletion(workout) },
         onProfileClick = onProfileClick
     )
 }
@@ -41,6 +42,7 @@ fun HistoryScreen(
 fun HistoryScreenContent(
     workouts: List<WorkoutEntity> = emptyList(),
     onAddWorkout: (String) -> Unit = {},
+    onToggleWorkout: (WorkoutEntity) -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
     var showAddDialog by remember { mutableStateOf(false) }
@@ -102,7 +104,8 @@ fun HistoryScreenContent(
                         WorkoutTile(
                             title = workout.title,
                             dateMillis = workout.date,
-                            isCompleted = workout.isCompleted
+                            isCompleted = workout.isCompleted,
+                            onToggle = { onToggleWorkout(workout) }
                         )
                     }
                     item { Spacer(modifier = Modifier.height(8.dp)) }
