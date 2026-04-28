@@ -1,7 +1,14 @@
 package com.example.gymtrack.ui.profile
 
+import android.content.Intent
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -16,6 +23,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -23,6 +32,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
 import com.example.gymtrack.R
 import com.example.gymtrack.ui.components.BottomNavTab
 import com.example.gymtrack.ui.components.BottomNavigationBar
@@ -34,14 +44,15 @@ fun ProfileEditScreen(
     onHistoryClick: () -> Unit = {},
     onAddClick: () -> Unit = {}
 ) {
+    val context     = LocalContext.current
     val userProfile by viewModel.userProfile.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    var firstName by remember { mutableStateOf("") }
-    var weight    by remember { mutableStateOf("") }
-    var height    by remember { mutableStateOf("") }
+    var firstName         by remember { mutableStateOf("") }
+    var weight            by remember { mutableStateOf("") }
+    var height            by remember { mutableStateOf("") }
+    var profilePictureUri by remember { mutableStateOf<String?>(null) }
 
-    // Wypełnij pola przy pierwszym załadowaniu danych z bazy , o ile użytkownik jest w bazie
     var fieldsInitialized by remember { mutableStateOf(false) }
     LaunchedEffect(userProfile) {
         if (!fieldsInitialized) {
@@ -49,12 +60,12 @@ fun ProfileEditScreen(
                 firstName         = it.firstName
                 weight            = it.weight.toString()
                 height            = it.height.toString()
+                profilePictureUri = it.profilePictureUri
                 fieldsInitialized = true
             }
         }
     }
 
-    // Nasłuchuj na sygnał "zapisano" z ViewModelu i pokaże potwierdzenie zapisu
     LaunchedEffect(Unit) {
         viewModel.saveSuccess.collect {
             snackbarHostState.showSnackbar(
@@ -64,16 +75,34 @@ fun ProfileEditScreen(
         }
     }
 
+    val imagePicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            context.contentResolver.takePersistableUriPermission(
+                uri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION
+            )
+            profilePictureUri = uri.toString()
+        }
+    }
+
     ProfileEditContent(
         firstName         = firstName,
         weight            = weight,
         height            = height,
+        profilePictureUri = profilePictureUri,
         onFirstNameChange = { firstName = it },
         onWeightChange    = { weight = it },
         onHeightChange    = { height = it },
+        onPickImage       = {
+            imagePicker.launch(
+                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+            )
+        },
         snackbarHostState = snackbarHostState,
         onSubmit = {
-            viewModel.saveProfile(firstName.trim(), weight.trim(), height.trim())
+            viewModel.saveProfile(firstName.trim(), weight.trim(), height.trim(), profilePictureUri)
         },
         onHistoryClick = onHistoryClick,
         onAddClick     = onAddClick
@@ -85,9 +114,11 @@ fun ProfileEditContent(
     firstName: String = "",
     weight: String = "",
     height: String = "",
+    profilePictureUri: String? = null,
     onFirstNameChange: (String) -> Unit = {},
     onWeightChange: (String) -> Unit = {},
     onHeightChange: (String) -> Unit = {},
+    onPickImage: () -> Unit = {},
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     onSubmit: () -> Unit = {},
     onHistoryClick: () -> Unit = {},
@@ -100,9 +131,9 @@ fun ProfileEditContent(
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState) { data ->
                 Snackbar(
-                    snackbarData    = data,
-                    containerColor  = MahoganyRed,
-                    contentColor    = White
+                    snackbarData   = data,
+                    containerColor = MahoganyRed,
+                    contentColor   = White
                 )
             }
         },
@@ -131,7 +162,6 @@ fun ProfileEditContent(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Logo
             Image(
                 painter            = painterResource(id = R.drawable.gymtrack_logo_white),
                 contentDescription = "GymTrack Logo",
@@ -142,25 +172,39 @@ fun ProfileEditContent(
 
             Spacer(modifier = Modifier.height(0.dp))
 
-            // Ikona profilowa
-            Icon(
-                imageVector        = Icons.Default.AccountCircle,
-                contentDescription = "Profile picture",
-                tint               = Color(0xFF555555),
-                modifier           = Modifier
+            Box(
+                modifier = Modifier
                     .size(90.dp)
                     .clip(CircleShape)
-            )
+                    .border(2.dp, MahoganyRed, CircleShape)
+                    .clickable { onPickImage() },
+                contentAlignment = Alignment.Center
+            ) {
+                if (profilePictureUri != null) {
+                    AsyncImage(
+                        model              = Uri.parse(profilePictureUri),
+                        contentDescription = "Profile picture",
+                        contentScale       = ContentScale.Crop,
+                        modifier           = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Icon(
+                        imageVector        = Icons.Default.AccountCircle,
+                        contentDescription = "Profile picture",
+                        tint               = Color(0xFF555555),
+                        modifier           = Modifier.size(90.dp)
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Przycisk zmiany zdjęcia DO ZROBINEIA JESZCZE
             OutlinedButton(
-                onClick          = { /* TODO: image picker */ },
-                shape            = RoundedCornerShape(8.dp),
-                colors           = ButtonDefaults.outlinedButtonColors(contentColor = MahoganyRed),
-                border           = androidx.compose.foundation.BorderStroke(1.5.dp, MahoganyRed),
-                contentPadding   = PaddingValues(horizontal = 14.dp, vertical = 4.dp)
+                onClick        = { onPickImage() },
+                shape          = RoundedCornerShape(8.dp),
+                colors         = ButtonDefaults.outlinedButtonColors(contentColor = MahoganyRed),
+                border         = androidx.compose.foundation.BorderStroke(1.5.dp, MahoganyRed),
+                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 4.dp)
             ) {
                 Text(
                     text       = "Change picture",
@@ -212,14 +256,13 @@ fun ProfileEditContent(
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            // Submit changes
             Button(
                 onClick = {
                     val normalizedWeight = weight.replace(',', '.')
                     when {
-                        firstName.isBlank()                  -> errorMessage = "Please enter your first name."
+                        firstName.isBlank()                      -> errorMessage = "Please enter your first name."
                         normalizedWeight.toFloatOrNull() == null -> errorMessage = "Please enter a valid weight."
-                        height.toIntOrNull() == null          -> errorMessage = "Please enter a valid height."
+                        height.toIntOrNull() == null             -> errorMessage = "Please enter a valid height."
                         else -> {
                             errorMessage = ""
                             onSubmit()
@@ -233,7 +276,7 @@ fun ProfileEditContent(
                 shape  = RoundedCornerShape(28.dp)
             ) {
                 Row(
-                    verticalAlignment   = Alignment.CenterVertically,
+                    verticalAlignment     = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Text(

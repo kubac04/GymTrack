@@ -26,7 +26,7 @@ class ProfileViewModel(private val userRepository: UserRepository) : ViewModel()
     private val _saveSuccess = MutableSharedFlow<Unit>()
     val saveSuccess: SharedFlow<Unit> = _saveSuccess
 
-    fun saveProfile(firstName: String, weight: String, height: String) {
+    fun saveProfile(firstName: String, weight: String, height: String, photoUri: String? = null) {
         // Obsługa przecinka
         val normalizedWeight = weight.replace(',', '.')
         val weightFloat = normalizedWeight.toFloatOrNull() ?: 0f
@@ -38,7 +38,8 @@ class ProfileViewModel(private val userRepository: UserRepository) : ViewModel()
                     uid       = 1,
                     firstName = firstName,
                     weight    = weightFloat,
-                    height    = heightInt
+                    height    = heightInt,
+                    profilePictureUri = photoUri ?: userProfile.value?.profilePictureUri
                 )
             )
             _saveSuccess.emit(Unit) // powiadom UI że zapis się udał
