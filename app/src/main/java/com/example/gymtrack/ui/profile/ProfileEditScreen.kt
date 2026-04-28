@@ -1,6 +1,5 @@
 package com.example.gymtrack.ui.profile
 
-import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -79,11 +78,7 @@ fun ProfileEditScreen(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri: Uri? ->
         if (uri != null) {
-            context.contentResolver.takePersistableUriPermission(
-                uri,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION
-            )
-            profilePictureUri = uri.toString()
+            profilePictureUri = saveImageToInternalStorage(context, uri)
         }
     }
 
@@ -182,7 +177,7 @@ fun ProfileEditContent(
             ) {
                 if (profilePictureUri != null) {
                     AsyncImage(
-                        model              = Uri.parse(profilePictureUri),
+                        model              = profilePictureUri,
                         contentDescription = "Profile picture",
                         contentScale       = ContentScale.Crop,
                         modifier           = Modifier.fillMaxSize()
@@ -333,6 +328,17 @@ private fun ProfileEditField(
         textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Center),
         singleLine = true
     )
+}
+
+private fun saveImageToInternalStorage(context: android.content.Context, uri: Uri): String {
+    val inputStream = context.contentResolver.openInputStream(uri)
+    val file = java.io.File(context.filesDir, "profile_photo.jpg")
+    inputStream?.use { input ->
+        file.outputStream().use { output ->
+            input.copyTo(output)
+        }
+    }
+    return file.absolutePath
 }
 
 @Preview(showBackground = true, name = "Profile Edit")
