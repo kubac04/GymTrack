@@ -88,7 +88,7 @@ fun HistoryScreenContent(
             if (workouts.isEmpty()) {
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    text = "None trainings",
+                    text = "No trainings",
                     color = Silver,
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Medium,
@@ -184,7 +184,7 @@ fun HistoryScreenContent(
     }
 }
 
-// Preview — pusty ekran (None training)
+// Preview — pusty ekran (No training)
 @Preview(showBackground = true, name = "History - pusty")
 @Composable
 fun HistoryScreenEmptyPreview() {
