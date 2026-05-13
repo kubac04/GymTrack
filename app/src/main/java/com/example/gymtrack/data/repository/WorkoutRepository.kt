@@ -8,7 +8,7 @@ class WorkoutRepository(private val workoutDao: WorkoutDao) {
 
     fun getAllWorkouts(): Flow<List<WorkoutEntity>> = workoutDao.getAllWorkouts()
 
-    fun getWorkoutById(id: Int): Flow<WorkoutEntity> = workoutDao.getWorkoutById(id)
+    fun getWorkoutById(id: Int): Flow<WorkoutEntity?> = workoutDao.getWorkoutById(id)
 
     suspend fun insertWorkout(workout: WorkoutEntity) {
         workoutDao.insertWorkout(workout)

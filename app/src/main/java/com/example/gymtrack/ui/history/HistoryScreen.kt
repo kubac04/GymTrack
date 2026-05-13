@@ -12,7 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -23,18 +22,19 @@ import com.example.gymtrack.ui.components.BottomNavigationBar
 import com.example.gymtrack.ui.components.WorkoutTile
 import com.example.gymtrack.ui.theme.*
 
-// Wrapper łączący ViewModel z UI tego pasku zadan na dole i przekierowania
 @Composable
 fun HistoryScreen(
     viewModel: HistoryViewModel,
-    onProfileClick: () -> Unit = {}
+    onProfileClick: () -> Unit = {},
+    onWorkoutClick: (Int) -> Unit = {}
 ) {
     val workouts by viewModel.workouts.collectAsStateWithLifecycle()
     HistoryScreenContent(
         workouts = workouts,
         onAddWorkout = { title -> viewModel.addWorkout(title) },
         onToggleWorkout = { workout -> viewModel.toggleWorkoutCompletion(workout) },
-        onProfileClick = onProfileClick
+        onProfileClick = onProfileClick,
+        onWorkoutClick = onWorkoutClick
     )
 }
 
@@ -43,7 +43,8 @@ fun HistoryScreenContent(
     workouts: List<WorkoutEntity> = emptyList(),
     onAddWorkout: (String) -> Unit = {},
     onToggleWorkout: (WorkoutEntity) -> Unit = {},
-    onProfileClick: () -> Unit = {}
+    onProfileClick: () -> Unit = {},
+    onWorkoutClick: (Int) -> Unit = {}
 ) {
     var showAddDialog by remember { mutableStateOf(false) }
     var newWorkoutTitle by remember { mutableStateOf("") }
@@ -73,7 +74,6 @@ fun HistoryScreenContent(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Logo
             Image(
                 painter = painterResource(id = R.drawable.gymtrack_logo_white),
                 contentDescription = "GymTrack Logo",
@@ -82,9 +82,6 @@ fun HistoryScreenContent(
                     .height(250.dp)
             )
 
-            Spacer(modifier = Modifier.height(0.dp))
-
-            // Workout list or empty state
             if (workouts.isEmpty()) {
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
@@ -105,7 +102,8 @@ fun HistoryScreenContent(
                             title = workout.title,
                             dateMillis = workout.date,
                             isCompleted = workout.isCompleted,
-                            onToggle = { onToggleWorkout(workout) }
+                            onToggle = { onToggleWorkout(workout) },
+                            onTitleClick = { onWorkoutClick(workout.uid) }
                         )
                     }
                     item { Spacer(modifier = Modifier.height(8.dp)) }
@@ -114,38 +112,19 @@ fun HistoryScreenContent(
         }
     }
 
-    // Dialog to add new training
     if (showAddDialog) {
         AlertDialog(
-            onDismissRequest = {
-                showAddDialog = false
-                newWorkoutTitle = ""
-            },
+            onDismissRequest = { showAddDialog = false; newWorkoutTitle = "" },
             containerColor = CarbonBlack,
-            title = {
-                Text(
-                    text = "New Training",
-                    color = White,
-                    fontWeight = FontWeight.Bold
-                )
-            },
+            title = { Text("New Training", color = White, fontWeight = FontWeight.Bold) },
             text = {
                 Column {
-                    Text(
-                        text = "Enter training name:",
-                        color = Silver,
-                        fontSize = 14.sp
-                    )
+                    Text("Enter training name:", color = Silver, fontSize = 14.sp)
                     Spacer(modifier = Modifier.height(10.dp))
                     OutlinedTextField(
                         value = newWorkoutTitle,
                         onValueChange = { newWorkoutTitle = it },
-                        placeholder = {
-                            Text(
-                                text = "e.g. Friday - back",
-                                color = Silver
-                            )
-                        },
+                        placeholder = { Text("e.g. Friday - back", color = Silver) },
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MahoganyRed,
                             unfocusedBorderColor = Silver,
@@ -158,52 +137,19 @@ fun HistoryScreenContent(
                 }
             },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        if (newWorkoutTitle.isNotBlank()) {
-                            onAddWorkout(newWorkoutTitle.trim())
-                            newWorkoutTitle = ""
-                            showAddDialog = false
-                        }
+                TextButton(onClick = {
+                    if (newWorkoutTitle.isNotBlank()) {
+                        onAddWorkout(newWorkoutTitle.trim())
+                        newWorkoutTitle = ""
+                        showAddDialog = false
                     }
-                ) {
-                    Text(text = "Add", color = MahoganyRed, fontWeight = FontWeight.Bold)
-                }
+                }) { Text("Add", color = MahoganyRed, fontWeight = FontWeight.Bold) }
             },
             dismissButton = {
-                TextButton(
-                    onClick = {
-                        showAddDialog = false
-                        newWorkoutTitle = ""
-                    }
-                ) {
-                    Text(text = "Cancel", color = Silver)
+                TextButton(onClick = { showAddDialog = false; newWorkoutTitle = "" }) {
+                    Text("Cancel", color = Silver)
                 }
             }
-        )
-    }
-}
-
-// Preview — pusty ekran (None training)
-@Preview(showBackground = true, name = "History - pusty")
-@Composable
-fun HistoryScreenEmptyPreview() {
-    GymTrackTheme {
-        HistoryScreenContent(workouts = emptyList())
-    }
-}
-
-// Preview — ekran z przykładowymi treningami
-@Preview(showBackground = true, name = "History - z treningami")
-@Composable
-fun HistoryScreenWithDataPreview() {
-    GymTrackTheme {
-        HistoryScreenContent(
-            workouts = listOf(
-                WorkoutEntity(uid = 1, title = "Friday - back",  date = 1742425200000L, isCompleted = true),
-                WorkoutEntity(uid = 2, title = "Monday - chest", date = 1742166000000L, isCompleted = true),
-                WorkoutEntity(uid = 3, title = "Wednesday - legs", date = 1741993200000L, isCompleted = false),
-            )
         )
     }
 }

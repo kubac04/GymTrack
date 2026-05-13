@@ -10,7 +10,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,6 +30,7 @@ fun WorkoutTile(
     dateMillis: Long,
     isCompleted: Boolean,
     onToggle: () -> Unit,
+    onTitleClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val dateFormatted = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
@@ -47,16 +47,16 @@ fun WorkoutTile(
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .background(MahoganyRed)
-            .clickable { onToggle() }
+            .clickable { onTitleClick() }
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Green checkmark circle
         Box(
             modifier = Modifier
                 .size(36.dp)
                 .clip(CircleShape)
-                .background(animatedColor),
+                .background(animatedColor)
+                .clickable { onToggle() },
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -69,17 +69,14 @@ fun WorkoutTile(
 
         Spacer(modifier = Modifier.width(14.dp))
 
-        // Title
         Text(
             text = title,
             color = White,
             fontWeight = FontWeight.Bold,
             fontSize = 17.sp,
-            style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.weight(1f)
         )
 
-        // Date
         Text(
             text = dateFormatted,
             color = White,

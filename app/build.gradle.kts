@@ -75,4 +75,6 @@ dependencies {
     implementation("androidx.room:room-paging:$room_version")
 
     implementation("io.coil-kt:coil-compose:2.7.0")
+    implementation("io.coil-kt:coil-gif:2.7.0")
+    implementation("androidx.compose.material:material-icons-extended")
 }

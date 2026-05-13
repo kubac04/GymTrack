@@ -23,5 +23,5 @@ interface WorkoutDao {
     fun getAllWorkouts(): Flow<List<WorkoutEntity>>
 
     @Query("SELECT * FROM Workouts WHERE uid = :id")
-    fun getWorkoutById(id: Int): Flow<WorkoutEntity>
+    fun getWorkoutById(id: Int): Flow<WorkoutEntity?>
 }
