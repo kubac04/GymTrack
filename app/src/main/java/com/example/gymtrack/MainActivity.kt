@@ -7,13 +7,16 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavType
+import androidx.navigation.compose.*
+import androidx.navigation.navArgument
 import com.example.gymtrack.ui.exercise.ExerciseDetailScreen
 import com.example.gymtrack.ui.exercise.ExerciseListScreen
 import com.example.gymtrack.ui.exercise.ExerciseViewModel
 import com.example.gymtrack.ui.history.HistoryScreen
 import com.example.gymtrack.ui.history.HistoryViewModel
 import com.example.gymtrack.ui.profile.ProfileEditScreen
-import com.example.gymtrack.ui.profile.ProfileScreen
+import com.example.gymtrack.ui.profile.ProfileLoadState
 import com.example.gymtrack.ui.profile.ProfileViewModel
 import com.example.gymtrack.ui.theme.GymTrackTheme
 import com.example.gymtrack.ui.welcome.WelcomeScreen
@@ -24,145 +27,163 @@ import com.example.gymtrack.ui.workout.WorkoutSummaryScreen
 
 class MainActivity : ComponentActivity() {
 
-    private lateinit var profileViewModel: ProfileViewModel
-    private lateinit var historyViewModel: HistoryViewModel
-    private lateinit var exerciseViewModel: ExerciseViewModel
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
         val app = application as GymTrackApplication
 
-        profileViewModel = ViewModelProvider(
-            this, ProfileViewModel.Factory(app.userRepository)
-        )[ProfileViewModel::class.java]
-
-        historyViewModel = ViewModelProvider(
-            this, HistoryViewModel.Factory(app.workoutRepository)
-        )[HistoryViewModel::class.java]
-
-        exerciseViewModel = ViewModelProvider(
-            this, ExerciseViewModel.Factory(app.exerciseRepository)
-        )[ExerciseViewModel::class.java]
+        val profileViewModel  = ViewModelProvider(this, ProfileViewModel.Factory(app.userRepository))[ProfileViewModel::class.java]
+        val historyViewModel  = ViewModelProvider(this, HistoryViewModel.Factory(app.workoutRepository))[HistoryViewModel::class.java]
+        val exerciseViewModel = ViewModelProvider(this, ExerciseViewModel.Factory(app.exerciseRepository))[ExerciseViewModel::class.java]
 
         setContent {
             GymTrackTheme {
-                val isProfileChecked by profileViewModel.isProfileChecked.collectAsStateWithLifecycle()
-                val userProfile by profileViewModel.userProfile.collectAsStateWithLifecycle()
+                val navController    = rememberNavController()
+                val profileLoadState by profileViewModel.profileLoadState.collectAsStateWithLifecycle()
 
-                var currentScreen by remember { mutableStateOf<String?>(null) }
-                var currentWorkoutId by remember { mutableStateOf(0) }
-                var summaryCalories by remember { mutableStateOf(0) }
-
-                val workoutDetailViewModel = remember(currentWorkoutId) {
-                    if (currentWorkoutId > 0) {
-                        WorkoutDetailViewModel(
-                            workoutId = currentWorkoutId,
-                            workoutRepository = app.workoutRepository,
-                            workoutExerciseRepository = app.workoutExerciseRepository
-                        )
-                    } else null
-                }
-
-                LaunchedEffect(isProfileChecked) {
-                    if (isProfileChecked && currentScreen == null) {
-                        currentScreen = if (userProfile != null) "history" else "welcome"
-                    }
-                }
-
-                when {
-                    currentScreen == "welcome" -> WelcomeScreen(
-                        onNextClick = { currentScreen = "profile" }
-                    )
-                    currentScreen == "profile" -> ProfileScreen(
-                        viewModel = profileViewModel,
-                        onNextClick = { currentScreen = "history" }
-                    )
-                    currentScreen == "history" -> HistoryScreen(
-                        viewModel = historyViewModel,
-                        onProfileClick = { currentScreen = "profile_edit" },
-                        onWorkoutClick = { workoutId ->
-                            currentWorkoutId = workoutId
-                            currentScreen = "workout_detail"
+                // Pojedynczy sealed state — brak race condition
+                LaunchedEffect(profileLoadState) {
+                    when (profileLoadState) {
+                        is ProfileLoadState.HasProfile -> navController.navigate("history") {
+                            popUpTo(0) { inclusive = true }
                         }
-                    )
-                    currentScreen == "profile_edit" -> ProfileEditScreen(
-                        viewModel = profileViewModel,
-                        onHistoryClick = { currentScreen = "history" },
-                        onAddClick = { currentScreen = "history" }
-                    )
-                    currentScreen == "workout_detail" && workoutDetailViewModel != null -> {
+                        is ProfileLoadState.NoProfile -> navController.navigate("welcome") {
+                            popUpTo(0) { inclusive = true }
+                        }
+                        ProfileLoadState.Loading -> { /* czekamy */ }
+                    }
+                }
+
+                NavHost(navController = navController, startDestination = "loading") {
+
+                    composable("loading") { /* splash / pusty ekran podczas sprawdzania profilu */ }
+
+                    composable("welcome") {
+                        WelcomeScreen(onNextClick = { navController.navigate("profile_setup") })
+                    }
+
+                    composable("profile_setup") {
+                        ProfileEditScreen(
+                            viewModel      = profileViewModel,
+                            onHistoryClick = {
+                                navController.navigate("history") {
+                                    popUpTo(0) { inclusive = true }
+                                }
+                            },
+                            onAddClick = {
+                                navController.navigate("history") {
+                                    popUpTo(0) { inclusive = true }
+                                }
+                            }
+                        )
+                    }
+
+                    composable("history") {
+                        HistoryScreen(
+                            viewModel      = historyViewModel,
+                            onProfileClick = { navController.navigate("profile_edit") },
+                            onWorkoutClick = { workoutId -> navController.navigate("workout_detail/$workoutId") }
+                        )
+                    }
+
+                    composable("profile_edit") {
+                        ProfileEditScreen(
+                            viewModel      = profileViewModel,
+                            onHistoryClick = { navController.popBackStack() },
+                            onAddClick     = { navController.popBackStack() }
+                        )
+                    }
+
+                    composable(
+                        route     = "workout_detail/{workoutId}",
+                        arguments = listOf(navArgument("workoutId") { type = NavType.IntType })
+                    ) { backStackEntry ->
+                        val workoutId = backStackEntry.arguments?.getInt("workoutId") ?: 0
+                        val viewModel = remember(workoutId) {
+                            WorkoutDetailViewModel(workoutId, app.workoutRepository, app.workoutExerciseRepository)
+                        }
                         WorkoutDetailScreen(
-                            viewModel = workoutDetailViewModel,
-                            onBack = { currentScreen = "history" },
-                            onEdit = { currentScreen = "workout_edit" },
-                            onAddExercise = { currentScreen = "exercise_list_detail" },
-                            onComplete = { calories ->
-                                summaryCalories = calories
-                                currentScreen = "workout_summary"
-                            }
+                            viewModel     = viewModel,
+                            onBack        = { navController.popBackStack() },
+                            onEdit        = { navController.navigate("workout_edit/$workoutId") },
+                            onAddExercise = { navController.navigate("exercise_list/$workoutId/false") },
+                            onComplete    = { calories -> navController.navigate("workout_summary/$calories") }
                         )
                     }
-                    currentScreen == "workout_edit" && workoutDetailViewModel != null -> {
+
+                    composable(
+                        route     = "workout_edit/{workoutId}",
+                        arguments = listOf(navArgument("workoutId") { type = NavType.IntType })
+                    ) { backStackEntry ->
+                        val workoutId = backStackEntry.arguments?.getInt("workoutId") ?: 0
+                        val viewModel = remember(workoutId) {
+                            WorkoutDetailViewModel(workoutId, app.workoutRepository, app.workoutExerciseRepository)
+                        }
                         WorkoutEditScreen(
-                            viewModel = workoutDetailViewModel,
-                            onBack = { currentScreen = "workout_detail" },
-                            onAddExercise = { currentScreen = "exercise_list" }
+                            viewModel     = viewModel,
+                            onBack        = { navController.popBackStack() },
+                            onAddExercise = { navController.navigate("exercise_list/$workoutId/true") }
                         )
                     }
-                    // Exercise list from WorkoutEditScreen
-                    currentScreen == "exercise_list" -> {
+
+                    composable(
+                        route     = "exercise_list/{workoutId}/{fromEdit}",
+                        arguments = listOf(
+                            navArgument("workoutId") { type = NavType.IntType },
+                            navArgument("fromEdit")  { type = NavType.BoolType }
+                        )
+                    ) { backStackEntry ->
+                        val workoutId = backStackEntry.arguments?.getInt("workoutId") ?: 0
+                        val fromEdit  = backStackEntry.arguments?.getBoolean("fromEdit") ?: false
                         ExerciseListScreen(
-                            viewModel = exerciseViewModel,
-                            onBack = { currentScreen = "workout_edit" },
+                            viewModel       = exerciseViewModel,
+                            onBack          = { navController.popBackStack() },
                             onExerciseClick = { exerciseId ->
-                                currentScreen = "exercise_detail_from_edit_$exerciseId"
+                                navController.navigate("exercise_detail/$workoutId/$exerciseId/$fromEdit")
                             }
                         )
                     }
-                    // Exercise list from WorkoutDetailScreen (add directly)
-                    currentScreen == "exercise_list_detail" -> {
-                        ExerciseListScreen(
-                            viewModel = exerciseViewModel,
-                            onBack = { currentScreen = "workout_detail" },
-                            onExerciseClick = { exerciseId ->
-                                currentScreen = "exercise_detail_from_detail_$exerciseId"
-                            }
+
+                    composable(
+                        route     = "exercise_detail/{workoutId}/{exerciseId}/{fromEdit}",
+                        arguments = listOf(
+                            navArgument("workoutId")  { type = NavType.IntType },
+                            navArgument("exerciseId") { type = NavType.IntType },
+                            navArgument("fromEdit")   { type = NavType.BoolType }
                         )
-                    }
-                    currentScreen?.startsWith("exercise_detail_from_edit_") == true -> {
-                        val exerciseId = currentScreen!!
-                            .removePrefix("exercise_detail_from_edit_")
-                            .toIntOrNull() ?: 0
+                    ) { backStackEntry ->
+                        val workoutId  = backStackEntry.arguments?.getInt("workoutId") ?: 0
+                        val exerciseId = backStackEntry.arguments?.getInt("exerciseId") ?: 0
+                        val fromEdit   = backStackEntry.arguments?.getBoolean("fromEdit") ?: false
+
+                        val workoutViewModel = remember(workoutId) {
+                            WorkoutDetailViewModel(workoutId, app.workoutRepository, app.workoutExerciseRepository)
+                        }
                         ExerciseDetailScreen(
-                            exerciseId = exerciseId,
-                            viewModel = exerciseViewModel,
-                            onBack = { currentScreen = "exercise_list" },
+                            exerciseId    = exerciseId,
+                            viewModel     = exerciseViewModel,
+                            onBack        = { navController.popBackStack() },
                             onAddToWorkout = { exId ->
-                                workoutDetailViewModel?.addExercise(exId)
-                                currentScreen = "workout_edit"
+                                workoutViewModel.addExercise(exId)
+                                val target = if (fromEdit) "workout_edit/$workoutId" else "workout_detail/$workoutId"
+                                navController.popBackStack(target, inclusive = false)
                             }
                         )
                     }
-                    currentScreen?.startsWith("exercise_detail_from_detail_") == true -> {
-                        val exerciseId = currentScreen!!
-                            .removePrefix("exercise_detail_from_detail_")
-                            .toIntOrNull() ?: 0
-                        ExerciseDetailScreen(
-                            exerciseId = exerciseId,
-                            viewModel = exerciseViewModel,
-                            onBack = { currentScreen = "exercise_list_detail" },
-                            onAddToWorkout = { exId ->
-                                workoutDetailViewModel?.addExercise(exId)
-                                currentScreen = "workout_detail"
-                            }
-                        )
-                    }
-                    currentScreen == "workout_summary" -> {
+
+                    composable(
+                        route     = "workout_summary/{calories}",
+                        arguments = listOf(navArgument("calories") { type = NavType.IntType })
+                    ) { backStackEntry ->
+                        val calories = backStackEntry.arguments?.getInt("calories") ?: 0
                         WorkoutSummaryScreen(
-                            caloriesBurned = summaryCalories,
-                            onContinue = { currentScreen = "history" }
+                            caloriesBurned = calories,
+                            onContinue     = {
+                                navController.navigate("history") {
+                                    popUpTo("history") { inclusive = true }
+                                }
+                            }
                         )
                     }
                 }

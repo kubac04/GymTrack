@@ -8,18 +8,31 @@ import com.example.gymtrack.data.repository.UserRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
+sealed class ProfileLoadState {
+    object Loading   : ProfileLoadState()
+    object NoProfile : ProfileLoadState()
+    data class HasProfile(val user: UserEntity) : ProfileLoadState()
+}
+
 class ProfileViewModel(private val userRepository: UserRepository) : ViewModel() {
 
-    // Pobiera dane profilu z bazy
+    // Jeden flow zamiast dwóch osobnych — eliminuje race condition
+    val profileLoadState: StateFlow<ProfileLoadState> = userRepository
+        .getUserProfile()
+        .map { user ->
+            if (user != null) ProfileLoadState.HasProfile(user)
+            else ProfileLoadState.NoProfile
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ProfileLoadState.Loading)
+
+    // Skrót dla ekranów które potrzebują tylko danych użytkownika
     val userProfile: StateFlow<UserEntity?> = userRepository
         .getUserProfile()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
-    // true gdy baza już odpowiedziała (nawet jeśli jest pusta)
-    // Dzięki temu null = "jeszcze ładuje" czy "naprawdę brak usera"
-    val isProfileChecked: StateFlow<Boolean> = userRepository
-        .getUserProfile()
-        .map { true }
+    // Zachowane dla kompatybilności wstecznej
+    val isProfileChecked: StateFlow<Boolean> = profileLoadState
+        .map { it !is ProfileLoadState.Loading }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     // Sygnał zapisano pomyślnie

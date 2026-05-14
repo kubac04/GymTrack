@@ -1,15 +1,18 @@
 package com.example.gymtrack.ui.workout
 
+import android.media.MediaPlayer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.gymtrack.R
 import com.example.gymtrack.ui.theme.*
 
 @Composable
@@ -17,6 +20,17 @@ fun WorkoutSummaryScreen(
     caloriesBurned: Int,
     onContinue: () -> Unit
 ) {
+    val context = LocalContext.current
+
+    DisposableEffect(Unit) {
+        val mediaPlayer = MediaPlayer.create(context, R.raw.yeah_buddy)
+        mediaPlayer?.start()
+        onDispose {
+            mediaPlayer?.stop()
+            mediaPlayer?.release()
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()

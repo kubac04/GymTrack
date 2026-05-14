@@ -3,12 +3,9 @@ package com.example.gymtrack.ui.workout
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -21,15 +18,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.ImageLoader
+import coil.compose.AsyncImage
+import coil.decode.GifDecoder
+import coil.decode.ImageDecoderDecoder
+import coil.request.ImageRequest
 import com.example.gymtrack.data.local.entity.WorkoutExerciseItem
 import com.example.gymtrack.ui.components.muscleGroupStyle
 import com.example.gymtrack.ui.theme.*
+import com.example.gymtrack.util.exerciseDrawableRes
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WorkoutDetailScreen(
     viewModel: WorkoutDetailViewModel,
@@ -38,102 +42,81 @@ fun WorkoutDetailScreen(
     onAddExercise: () -> Unit,
     onComplete: (Int) -> Unit
 ) {
-    val workout by viewModel.workout.collectAsStateWithLifecycle()
+    val workout   by viewModel.workout.collectAsStateWithLifecycle()
     val exercises by viewModel.exercises.collectAsStateWithLifecycle()
     var showCompleteDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         containerColor = Black,
         topBar = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(CarbonBlack)
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                    .statusBarsPadding(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onBack) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = MahoganyRed)
-                }
-                Text(
-                    text = workout?.title ?: "",
-                    color = MahoganyRed,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    modifier = Modifier.weight(1f),
-                    textAlign = TextAlign.Center
-                )
-                IconButton(onClick = onEdit) {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Edit",
-                        tint = White
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text  = workout?.title ?: "",
+                        style = MaterialTheme.typography.titleMedium.copy(color = MahoganyRed, fontWeight = FontWeight.Bold)
                     )
-                }
-                // Complete (checkmark) button
-                IconButton(onClick = { showCompleteDialog = true }) {
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = "Complete",
-                        tint = Color(0xFF2ECC71)
-                    )
-                }
-            }
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = MahoganyRed)
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onEdit) {
+                        Icon(Icons.Default.Edit, contentDescription = "Edit", tint = White)
+                    }
+                    IconButton(onClick = { showCompleteDialog = true }) {
+                        Icon(Icons.Default.Check, contentDescription = "Complete", tint = Color(0xFF2ECC71))
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = CarbonBlack)
+            )
         },
         bottomBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(CarbonBlack)
-                    .padding(horizontal = 20.dp, vertical = 14.dp)
-                    .navigationBarsPadding()
-            ) {
-                Button(
-                    onClick = onAddExercise,
+            Surface(color = CarbonBlack, tonalElevation = 3.dp) {
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(54.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MahoganyRed),
-                    shape = RoundedCornerShape(14.dp)
+                        .navigationBarsPadding()
+                        .padding(horizontal = 20.dp, vertical = 14.dp)
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = null, tint = White)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        "Add exercise",
-                        color = White,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
-                    )
+                    Button(
+                        onClick  = onAddExercise,
+                        modifier = Modifier.fillMaxWidth().height(54.dp),
+                        colors   = ButtonDefaults.buttonColors(containerColor = MahoganyRed),
+                        shape    = RoundedCornerShape(14.dp)
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = null, tint = White)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            "Add exercise",
+                            style = MaterialTheme.typography.labelLarge.copy(color = White, fontWeight = FontWeight.Bold)
+                        )
+                    }
                 }
             }
         }
     ) { padding ->
         if (exercises.isEmpty()) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
+                modifier         = Modifier.fillMaxSize().padding(padding),
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("No exercises yet", color = Silver, fontSize = 18.sp)
+                    Text("No exercises yet", style = MaterialTheme.typography.bodyLarge.copy(color = Silver))
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Tap \"Add exercise\" below", color = Silver, fontSize = 14.sp)
+                    Text("Tap \"Add exercise\" below", style = MaterialTheme.typography.bodySmall.copy(color = Silver))
                 }
             }
         } else {
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .padding(horizontal = 16.dp),
+                modifier        = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
-                contentPadding = PaddingValues(vertical = 16.dp)
+                contentPadding  = PaddingValues(vertical = 16.dp)
             ) {
                 items(exercises) { item ->
                     WorkoutExerciseRow(
-                        item = item,
+                        item     = item,
                         onToggle = { viewModel.toggleExercise(item) }
                     )
                 }
@@ -144,20 +127,20 @@ fun WorkoutDetailScreen(
     if (showCompleteDialog) {
         AlertDialog(
             onDismissRequest = { showCompleteDialog = false },
-            containerColor = CarbonBlack,
-            title = { Text("Complete training?", color = White, fontWeight = FontWeight.Bold) },
-            text = { Text("This will mark the training as done.", color = Silver) },
+            containerColor   = CarbonBlack,
+            title   = { Text("Complete training?", style = MaterialTheme.typography.titleMedium.copy(color = White, fontWeight = FontWeight.Bold)) },
+            text    = { Text("This will mark the training as done.", style = MaterialTheme.typography.bodyMedium.copy(color = Silver)) },
             confirmButton = {
                 TextButton(onClick = {
                     showCompleteDialog = false
                     onComplete(viewModel.completeWorkout())
                 }) {
-                    Text("Complete", color = Color(0xFF2ECC71), fontWeight = FontWeight.Bold)
+                    Text("Complete", style = MaterialTheme.typography.labelLarge.copy(color = Color(0xFF2ECC71), fontWeight = FontWeight.Bold))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showCompleteDialog = false }) {
-                    Text("Cancel", color = Silver)
+                    Text("Cancel", style = MaterialTheme.typography.labelLarge.copy(color = Silver))
                 }
             }
         )
@@ -169,89 +152,91 @@ private fun WorkoutExerciseRow(
     item: WorkoutExerciseItem,
     onToggle: () -> Unit
 ) {
-    val style = muscleGroupStyle(item.muscleGroup)
+    val style      = muscleGroupStyle(item.muscleGroup)
+    val context    = LocalContext.current
+    val drawableRes = remember(item.exerciseName) { exerciseDrawableRes(context, item.exerciseName) }
 
-    val checkBg by animateColorAsState(
-        targetValue = if (item.isCompleted) Color(0xFF2ECC71) else Color.Transparent,
-        animationSpec = tween(300),
-        label = "cbBg"
-    )
-    val checkBorder by animateColorAsState(
-        targetValue = if (item.isCompleted) Color(0xFF2ECC71) else Silver,
-        animationSpec = tween(300),
-        label = "cbBorder"
-    )
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .background(CarbonBlack)
-            .padding(horizontal = 14.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Checkbox
-        Box(
-            modifier = Modifier
-                .size(28.dp)
-                .clip(RoundedCornerShape(6.dp))
-                .border(2.dp, checkBorder, RoundedCornerShape(6.dp))
-                .background(checkBg)
-                .clickable(onClick = onToggle),
-            contentAlignment = Alignment.Center
-        ) {
-            if (item.isCompleted) {
-                Icon(
-                    Icons.Default.Check,
-                    contentDescription = null,
-                    tint = White,
-                    modifier = Modifier.size(18.dp)
-                )
+    val gifLoader = remember {
+        ImageLoader.Builder(context)
+            .components {
+                if (android.os.Build.VERSION.SDK_INT >= 28) add(ImageDecoderDecoder.Factory())
+                else add(GifDecoder.Factory())
             }
-        }
+            .build()
+    }
 
-        Spacer(modifier = Modifier.width(12.dp))
-
-        // Muscle group thumbnail
-        Box(
-            modifier = Modifier
-                .size(44.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(style.color),
-            contentAlignment = Alignment.Center
+    ElevatedCard(
+        modifier  = Modifier.fillMaxWidth(),
+        shape     = RoundedCornerShape(14.dp),
+        colors    = CardDefaults.elevatedCardColors(containerColor = CarbonBlack),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier          = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = style.icon,
-                contentDescription = item.muscleGroup,
-                tint = White,
-                modifier = Modifier.size(26.dp)
+            Checkbox(
+                checked          = item.isCompleted,
+                onCheckedChange  = { onToggle() },
+                colors           = CheckboxDefaults.colors(
+                    checkedColor   = Color(0xFF2ECC71),
+                    uncheckedColor = Silver,
+                    checkmarkColor = White
+                )
             )
-        }
 
-        Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(4.dp))
 
-        // Name + stats
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = item.exerciseName,
-                color = if (item.isCompleted) Silver else White,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 15.sp
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                StatColumn("Sets", item.sets.toString())
-                StatColumn("Reps", item.reps.toString())
-                if (item.weightKg > 0f) StatColumn("Weight (kg)", item.weightKg.toInt().toString())
+            Box(
+                modifier         = Modifier
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(style.color),
+                contentAlignment = Alignment.Center
+            ) {
+                if (drawableRes != 0) {
+                    AsyncImage(
+                        model              = ImageRequest.Builder(context).data(drawableRes).build(),
+                        imageLoader        = gifLoader,
+                        contentDescription = item.exerciseName,
+                        contentScale       = ContentScale.Crop,
+                        modifier           = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Icon(
+                        imageVector        = style.icon,
+                        contentDescription = item.muscleGroup,
+                        tint               = White,
+                        modifier           = Modifier.size(26.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text  = item.exerciseName,
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        color      = if (item.isCompleted) Silver else White,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    StatChip("Sets",  item.sets.toString())
+                    StatChip("Reps",  item.reps.toString())
+                    if (item.weightKg > 0f) StatChip("kg", item.weightKg.toInt().toString())
+                }
             }
         }
     }
 }
 
 @Composable
-private fun StatColumn(label: String, value: String) {
+private fun StatChip(label: String, value: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(label, color = Silver, fontSize = 10.sp, letterSpacing = 0.3.sp)
-        Text(value, color = White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+        Text(label, style = MaterialTheme.typography.labelSmall.copy(color = Silver))
+        Text(value, style = MaterialTheme.typography.titleSmall.copy(color = White, fontWeight = FontWeight.Bold))
     }
 }

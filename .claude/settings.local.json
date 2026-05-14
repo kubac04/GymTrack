@@ -3,7 +3,8 @@
     "allow": [
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\jakcie5571\\\\StudioProjects\\\\GymTrack\" -Recurse -Filter \"*.kt\")",
       "Bash(Select-Object -ExpandProperty FullName)",
-      "Bash(Sort-Object)"
+      "Bash(Sort-Object)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\jakcie5571\\\\StudioProjects\\\\GymTrack\\\\app\\\\src\\\\main\\\\res\" -Recurse | Where-Object { $_.PSIsContainer } | Select-Object -ExpandProperty FullName | Sort-Object)"
     ]
   }
 }
