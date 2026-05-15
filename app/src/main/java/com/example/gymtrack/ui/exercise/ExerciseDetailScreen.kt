@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
@@ -66,7 +67,7 @@ fun ExerciseDetailScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = MahoganyRed)
+                        Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back", tint = MahoganyRed)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = CarbonBlack)
@@ -74,7 +75,7 @@ fun ExerciseDetailScreen(
         },
         bottomBar = {
             exercise?.let { ex ->
-                Surface(color = CarbonBlack, tonalElevation = 3.dp) {
+                Surface(color = Black, tonalElevation = 3.dp) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -153,91 +154,57 @@ fun ExerciseDetailScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // ── Lokalny GIF (jeśli jest) ──────────────────────────────
+                // LOCAL GIF / image
                 if (hasLocalImage) {
                     Text(
-                        text     = "Exercise preview",
-                        style    = MaterialTheme.typography.titleSmall.copy(color = White, fontWeight = FontWeight.Bold),
+                        text = "Exercise preview",
+                        color = White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp,
                         modifier = Modifier.padding(horizontal = 20.dp)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    ElevatedCard(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).height(220.dp),
-                        shape    = RoundedCornerShape(14.dp),
-                        colors   = CardDefaults.elevatedCardColors(containerColor = CarbonBlack)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
+                            .height(220.dp)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(CarbonBlack),
+                        contentAlignment = Alignment.Center
                     ) {
                         AsyncImage(
-                            model              = ImageRequest.Builder(context).data(localImageRes).crossfade(true).build(),
-                            imageLoader        = gifLoader,
+                            model = ImageRequest.Builder(context)
+                                .data(localImageRes)
+                                .crossfade(true)
+                                .build(),
+                            imageLoader = gifLoader,
                             contentDescription = ex.name,
-                            contentScale       = ContentScale.Fit,
-                            modifier           = Modifier.fillMaxSize()
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier.fillMaxSize()
                         )
                     }
                     Spacer(modifier = Modifier.height(12.dp))
                 }
 
-                // ── Miniatura YouTube z przyciskiem Play ──────────────────
+// YouTube button — always shown when videoUrl is present, regardless of GIF
                 if (ex.videoUrl.isNotEmpty()) {
-                    Text(
-                        text     = "Tutorial",
-                        style    = MaterialTheme.typography.titleSmall.copy(color = White, fontWeight = FontWeight.Bold),
-                        modifier = Modifier.padding(horizontal = 20.dp)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Box(
+                    OutlinedButton(
+                        onClick = {
+                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(youtubeWatchUrl)))
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 20.dp)
-                            .height(200.dp)
-                            .clip(RoundedCornerShape(14.dp))
-                            .clickable {
-                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(youtubeWatchUrl)))
-                            },
-                        contentAlignment = Alignment.Center
+                            .height(46.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MahoganyRed),
+                        border = androidx.compose.foundation.BorderStroke(1.5.dp, MahoganyRed),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
-                        // miniatura z YouTube
-                        AsyncImage(
-                            model              = ImageRequest.Builder(context)
-                                .data(thumbnailUrl)
-                                .crossfade(true)
-                                .build(),
-                            contentDescription = "Video thumbnail",
-                            contentScale       = ContentScale.Crop,
-                            modifier           = Modifier.fillMaxSize()
-                        )
-
-                        // ciemna nakładka
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(Color.Black.copy(alpha = 0.35f))
-                        )
-
-                        // przycisk Play
-                        Box(
-                            modifier         = Modifier
-                                .size(64.dp)
-                                .clip(CircleShape)
-                                .background(MahoganyRed),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector        = Icons.Default.PlayArrow,
-                                contentDescription = "Play on YouTube",
-                                tint               = White,
-                                modifier           = Modifier.size(38.dp)
-                            )
-                        }
+                        Icon(Icons.Default.PlayArrow, contentDescription = null, tint = MahoganyRed)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Watch tutorial on YouTube", color = MahoganyRed, fontWeight = FontWeight.SemiBold)
                     }
-
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text     = "Opens in YouTube",
-                        style    = MaterialTheme.typography.bodySmall.copy(color = Silver),
-                        modifier = Modifier.padding(horizontal = 20.dp)
-                    )
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))

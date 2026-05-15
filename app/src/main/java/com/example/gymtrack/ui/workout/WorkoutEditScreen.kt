@@ -2,12 +2,13 @@ package com.example.gymtrack.ui.workout
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material3.*
@@ -54,7 +55,7 @@ fun WorkoutEditScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = MahoganyRed)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MahoganyRed)
                     }
                 },
                 actions = {
@@ -66,7 +67,7 @@ fun WorkoutEditScreen(
             )
         },
         bottomBar = {
-            Surface(color = CarbonBlack, tonalElevation = 3.dp) {
+            Surface(color = Black, tonalElevation = 3.dp) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -97,7 +98,7 @@ fun WorkoutEditScreen(
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text     = workout?.title ?: "",
-                style    = MaterialTheme.typography.titleLarge.copy(color = MahoganyRed, fontWeight = FontWeight.Bold),
+                style    = Typography.titleLarge.copy(color = MahoganyRed, fontWeight = FontWeight.Bold),
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -110,13 +111,13 @@ fun WorkoutEditScreen(
             } else {
                 LazyColumn(
                     modifier            = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     items(exercises) { item ->
                         EditableRow(
                             item     = item,
                             onRemove = { viewModel.removeExercise(item) },
-                            onUpdate = { sets, reps, weight -> viewModel.updateExercise(item, sets, reps, weight) }
+                            onUpdate = { sets, reps, weight -> viewModel.updateExercise(item, sets, reps, weight) },
                         )
                     }
                     item { Spacer(modifier = Modifier.height(8.dp)) }
@@ -191,11 +192,21 @@ private fun EditableRow(
 
             Spacer(modifier = Modifier.width(10.dp))
 
-            Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Spacer to balance the close button on the right
+                    Spacer(modifier = Modifier.size(28.dp))
+
                     Text(
                         text     = item.exerciseName,
                         style    = MaterialTheme.typography.titleSmall.copy(color = White, fontWeight = FontWeight.SemiBold),
+                        textAlign = TextAlign.Center,
                         modifier = Modifier.weight(1f)
                     )
                     IconButton(onClick = onRemove, modifier = Modifier.size(28.dp)) {
@@ -205,7 +216,10 @@ private fun EditableRow(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     NumberField(label = "Sets", value = sets, onValueChange = { v ->
                         sets = v
                         onUpdate(v.toIntOrNull() ?: item.sets, reps.toIntOrNull() ?: item.reps, weight.toFloatOrNull() ?: 0f)
@@ -214,7 +228,7 @@ private fun EditableRow(
                         reps = v
                         onUpdate(sets.toIntOrNull() ?: item.sets, v.toIntOrNull() ?: item.reps, weight.toFloatOrNull() ?: 0f)
                     })
-                    NumberField(label = "kg", value = weight, onValueChange = { v ->
+                    NumberField(label = "Kg", value = weight, onValueChange = { v ->
                         weight = v
                         onUpdate(sets.toIntOrNull() ?: item.sets, reps.toIntOrNull() ?: item.reps, v.toFloatOrNull() ?: 0f)
                     })
@@ -229,7 +243,12 @@ private fun NumberField(label: String, value: String, onValueChange: (String) ->
     OutlinedTextField(
         value         = value,
         onValueChange = onValueChange,
-        label         = { Text(label, style = MaterialTheme.typography.labelSmall) },
+        label         = { Text(
+            text = label,
+            modifier = Modifier.fillMaxWidth(),
+            style = MaterialTheme.typography.labelSmall,
+            textAlign = TextAlign.Center
+        ) },
         singleLine    = true,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         modifier      = Modifier.width(72.dp),

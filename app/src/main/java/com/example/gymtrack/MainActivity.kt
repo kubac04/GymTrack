@@ -16,6 +16,7 @@ import com.example.gymtrack.ui.exercise.ExerciseViewModel
 import com.example.gymtrack.ui.history.HistoryScreen
 import com.example.gymtrack.ui.history.HistoryViewModel
 import com.example.gymtrack.ui.profile.ProfileEditScreen
+import com.example.gymtrack.ui.profile.ProfileScreen
 import com.example.gymtrack.ui.profile.ProfileLoadState
 import com.example.gymtrack.ui.profile.ProfileViewModel
 import com.example.gymtrack.ui.theme.GymTrackTheme
@@ -64,18 +65,9 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable("profile_setup") {
-                        ProfileEditScreen(
+                        ProfileScreen(
                             viewModel      = profileViewModel,
-                            onHistoryClick = {
-                                navController.navigate("history") {
-                                    popUpTo(0) { inclusive = true }
-                                }
-                            },
-                            onAddClick = {
-                                navController.navigate("history") {
-                                    popUpTo(0) { inclusive = true }
-                                }
-                            }
+                            onNextClick = { navController.navigate("history") }
                         )
                     }
 

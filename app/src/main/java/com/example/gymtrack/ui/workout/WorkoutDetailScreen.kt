@@ -73,7 +73,7 @@ fun WorkoutDetailScreen(
             )
         },
         bottomBar = {
-            Surface(color = CarbonBlack, tonalElevation = 3.dp) {
+            Surface(color = Black, tonalElevation = 3.dp) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -214,16 +214,22 @@ private fun WorkoutExerciseRow(
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            Column(modifier = Modifier.weight(1f)) {
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 Text(
                     text  = item.exerciseName,
-                    style = MaterialTheme.typography.titleSmall.copy(
+                    style = Typography.titleSmall.copy(
                         color      = if (item.isCompleted) Silver else White,
                         fontWeight = FontWeight.SemiBold
                     )
                 )
                 Spacer(modifier = Modifier.height(6.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterHorizontally)
+                ) {
                     StatChip("Sets",  item.sets.toString())
                     StatChip("Reps",  item.reps.toString())
                     if (item.weightKg > 0f) StatChip("kg", item.weightKg.toInt().toString())

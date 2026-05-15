@@ -1,6 +1,7 @@
 package com.example.gymtrack.ui.workout
 
 import android.media.MediaPlayer
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -31,6 +32,18 @@ fun WorkoutSummaryScreen(
         }
     }
 
+    val animatedValue = remember { Animatable(0f) }
+    LaunchedEffect(caloriesBurned) {
+        animatedValue.animateTo(
+            targetValue     = caloriesBurned.toFloat(),
+            animationSpec   = tween(
+                durationMillis = 2000,
+                easing         = EaseOutQuart
+            )
+        )
+    }
+    val displayedCalories = animatedValue.value.toInt()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -43,54 +56,54 @@ fun WorkoutSummaryScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "Congrats!",
-            color = White,
+            text       = "Congrats!",
+            color      = White,
             fontWeight = FontWeight.Bold,
-            fontSize = 32.sp
+            fontSize   = 32.sp
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "Training completed!",
-            color = White,
+            text       = "Training completed!",
+            color      = White,
             fontWeight = FontWeight.Bold,
-            fontSize = 24.sp
+            fontSize   = 24.sp
         )
 
         Spacer(modifier = Modifier.height(32.dp))
 
         Text(
-            text = "You burned around:",
-            color = Silver,
+            text     = "You burned around:",
+            color    = Silver,
             fontSize = 18.sp
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
         Row(
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment     = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
             Text("🔥", fontSize = 40.sp)
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "$caloriesBurned kcal",
-                color = MahoganyRed,
+                text       = "$displayedCalories kcal",
+                color      = MahoganyRed,
                 fontWeight = FontWeight.Bold,
-                fontSize = 42.sp
+                fontSize   = 42.sp
             )
         }
 
         Spacer(modifier = Modifier.height(48.dp))
 
         Button(
-            onClick = onContinue,
+            onClick  = onContinue,
             modifier = Modifier
                 .width(200.dp)
                 .height(52.dp),
             colors = ButtonDefaults.buttonColors(containerColor = MahoganyRed),
-            shape = RoundedCornerShape(12.dp)
+            shape  = RoundedCornerShape(12.dp)
         ) {
             Text("Continue", color = White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
         }

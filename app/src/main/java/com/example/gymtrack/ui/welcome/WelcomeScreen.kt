@@ -20,7 +20,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.gymtrack.R
@@ -40,7 +39,6 @@ fun WelcomeScreen(onNextClick: () -> Unit = {}) {
     ) {
         Spacer(modifier = Modifier.height(48.dp))
 
-        // Logo
         Image(
             painter            = painterResource(id = R.drawable.gymtrack_logo_white),
             contentDescription = "GymTrack Logo",
@@ -60,39 +58,39 @@ fun WelcomeScreen(onNextClick: () -> Unit = {}) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // ── Player wideo ──────────────────────────────────────────────────
-        ElevatedCard(
-            modifier  = Modifier
-                .fillMaxWidth()
-                .height(220.dp),
-            shape     = RoundedCornerShape(16.dp),
-            colors    = CardDefaults.elevatedCardColors(containerColor = CarbonBlack),
-            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
-        ) {
-            AndroidView(
-                modifier = Modifier.fillMaxSize(),
-                factory  = { ctx ->
-                    VideoView(ctx).apply {
-                        val uri = Uri.parse(
-                            "android.resource://${ctx.packageName}/${R.raw.intro_video}"
-                        )
-                        setVideoURI(uri)
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+            val size = maxWidth * 0.85f
 
-                        // Kontrolki play/pause/seek pojawiają się po tapnięciu
-                        val mc = MediaController(ctx)
-                        mc.setAnchorView(this)
-                        setMediaController(mc)
+            Box(
+                modifier          = Modifier.fillMaxWidth(),
+                contentAlignment  = Alignment.Center
+            ) {
+                AndroidView(
+                    modifier = Modifier
+                        .size(size)
+                        .clip(RoundedCornerShape(16.dp)),
+                    factory = { ctx ->
+                        VideoView(ctx).apply {
+                            val uri = Uri.parse(
+                                "android.resource://${ctx.packageName}/${R.raw.intro_video}"
+                            )
+                            setVideoURI(uri)
+
+                            val mc = MediaController(ctx)
+                            mc.setAnchorView(this)
+                            setMediaController(mc)
+
+                            setOnPreparedListener { mp ->
+                                mp.isLooping = true
+                                start()
+                                mc.hide()
+                            }
+                        }
                     }
-                }
-            )
+                )
+            }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text  = "Tap the video to play",
-            style = MaterialTheme.typography.bodySmall.copy(color = Silver),
-        )
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -106,7 +104,6 @@ fun WelcomeScreen(onNextClick: () -> Unit = {}) {
 
         Spacer(modifier = Modifier.height(36.dp))
 
-        // Przycisk
         Button(
             onClick  = onNextClick,
             modifier = Modifier
@@ -138,10 +135,4 @@ fun WelcomeScreen(onNextClick: () -> Unit = {}) {
 
         Spacer(modifier = Modifier.height(32.dp))
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun WelcomeScreenPreview() {
-    WelcomeScreen()
 }
