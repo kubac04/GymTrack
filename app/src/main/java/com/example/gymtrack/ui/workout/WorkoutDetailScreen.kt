@@ -42,7 +42,7 @@ fun WorkoutDetailScreen(
     onAddExercise: () -> Unit,
     onComplete: (Int) -> Unit
 ) {
-    val workout   by viewModel.workout.collectAsStateWithLifecycle()
+    val workout by viewModel.workout.collectAsStateWithLifecycle()
     val exercises by viewModel.exercises.collectAsStateWithLifecycle()
     var showCompleteDialog by remember { mutableStateOf(false) }
 
@@ -52,7 +52,7 @@ fun WorkoutDetailScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text  = workout?.title ?: "",
+                        text = workout?.title ?: "",
                         style = MaterialTheme.typography.titleMedium.copy(color = MahoganyRed, fontWeight = FontWeight.Bold)
                     )
                 },
@@ -99,7 +99,7 @@ fun WorkoutDetailScreen(
     ) { padding ->
         if (exercises.isEmpty()) {
             Box(
-                modifier         = Modifier.fillMaxSize().padding(padding),
+                modifier = Modifier.fillMaxSize().padding(padding),
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -110,7 +110,7 @@ fun WorkoutDetailScreen(
             }
         } else {
             LazyColumn(
-                modifier        = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp),
+                modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 contentPadding  = PaddingValues(vertical = 16.dp)
             ) {
@@ -152,8 +152,8 @@ private fun WorkoutExerciseRow(
     item: WorkoutExerciseItem,
     onToggle: () -> Unit
 ) {
-    val style      = muscleGroupStyle(item.muscleGroup)
-    val context    = LocalContext.current
+    val style = muscleGroupStyle(item.muscleGroup)
+    val context = LocalContext.current
     val drawableRes = remember(item.exerciseName) { exerciseDrawableRes(context, item.exerciseName) }
 
     val gifLoader = remember {
@@ -166,20 +166,20 @@ private fun WorkoutExerciseRow(
     }
 
     ElevatedCard(
-        modifier  = Modifier.fillMaxWidth(),
-        shape     = RoundedCornerShape(14.dp),
-        colors    = CardDefaults.elevatedCardColors(containerColor = CarbonBlack),
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.elevatedCardColors(containerColor = CarbonBlack),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
     ) {
         Row(
-            modifier          = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Checkbox(
-                checked          = item.isCompleted,
-                onCheckedChange  = { onToggle() },
-                colors           = CheckboxDefaults.colors(
-                    checkedColor   = Color(0xFF2ECC71),
+                checked = item.isCompleted,
+                onCheckedChange = { onToggle() },
+                colors = CheckboxDefaults.colors(
+                    checkedColor = Color(0xFF2ECC71),
                     uncheckedColor = Silver,
                     checkmarkColor = White
                 )
@@ -188,7 +188,7 @@ private fun WorkoutExerciseRow(
             Spacer(modifier = Modifier.width(4.dp))
 
             Box(
-                modifier         = Modifier
+                modifier = Modifier
                     .size(44.dp)
                     .clip(RoundedCornerShape(10.dp))
                     .background(style.color),
@@ -196,18 +196,18 @@ private fun WorkoutExerciseRow(
             ) {
                 if (drawableRes != 0) {
                     AsyncImage(
-                        model              = ImageRequest.Builder(context).data(drawableRes).build(),
-                        imageLoader        = gifLoader,
+                        model = ImageRequest.Builder(context).data(drawableRes).build(),
+                        imageLoader = gifLoader,
                         contentDescription = item.exerciseName,
-                        contentScale       = ContentScale.Crop,
-                        modifier           = Modifier.fillMaxSize()
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
                     )
                 } else {
                     Icon(
-                        imageVector        = style.icon,
+                        imageVector = style.icon,
                         contentDescription = item.muscleGroup,
-                        tint               = White,
-                        modifier           = Modifier.size(26.dp)
+                        tint = White,
+                        modifier = Modifier.size(26.dp)
                     )
                 }
             }

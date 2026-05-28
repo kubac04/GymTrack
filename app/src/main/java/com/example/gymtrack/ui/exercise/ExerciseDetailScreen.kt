@@ -43,8 +43,8 @@ fun ExerciseDetailScreen(
     onAddToWorkout: (Int) -> Unit
 ) {
     val exerciseFlow = remember(exerciseId) { viewModel.getExerciseById(exerciseId) }
-    val exercise     by exerciseFlow.collectAsStateWithLifecycle(initialValue = null)
-    val context      = LocalContext.current
+    val exercise by exerciseFlow.collectAsStateWithLifecycle(initialValue = null)
+    val context = LocalContext.current
 
     val gifLoader = remember {
         ImageLoader.Builder(context)
@@ -61,7 +61,7 @@ fun ExerciseDetailScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text  = exercise?.name ?: "",
+                        text = exercise?.name ?: "",
                         style = MaterialTheme.typography.titleMedium.copy(color = White, fontWeight = FontWeight.Bold)
                     )
                 },
@@ -83,10 +83,10 @@ fun ExerciseDetailScreen(
                             .padding(horizontal = 20.dp, vertical = 14.dp)
                     ) {
                         Button(
-                            onClick  = { onAddToWorkout(ex.id) },
+                            onClick = { onAddToWorkout(ex.id) },
                             modifier = Modifier.fillMaxWidth().height(54.dp),
-                            colors   = ButtonDefaults.buttonColors(containerColor = MahoganyRed),
-                            shape    = RoundedCornerShape(14.dp)
+                            colors = ButtonDefaults.buttonColors(containerColor = MahoganyRed),
+                            shape = RoundedCornerShape(14.dp)
                         ) {
                             Text(
                                 "Add to current workout",
@@ -99,7 +99,7 @@ fun ExerciseDetailScreen(
         }
     ) { padding ->
         exercise?.let { ex ->
-            val style         = muscleGroupStyle(ex.muscleGroup)
+            val style = muscleGroupStyle(ex.muscleGroup)
             val localImageRes = remember(ex.name) { exerciseDrawableRes(context, ex.name) }
             val hasLocalImage = localImageRes != 0
 
@@ -187,7 +187,6 @@ fun ExerciseDetailScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                 }
 
-// YouTube button — always shown when videoUrl is present, regardless of GIF
                 if (ex.videoUrl.isNotEmpty()) {
                     OutlinedButton(
                         onClick = {

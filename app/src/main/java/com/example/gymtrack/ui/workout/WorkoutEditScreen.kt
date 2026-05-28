@@ -40,7 +40,7 @@ fun WorkoutEditScreen(
     onBack: () -> Unit,
     onAddExercise: () -> Unit
 ) {
-    val workout   by viewModel.workout.collectAsStateWithLifecycle()
+    val workout by viewModel.workout.collectAsStateWithLifecycle()
     val exercises by viewModel.exercises.collectAsStateWithLifecycle()
 
     Scaffold(
@@ -110,12 +110,12 @@ fun WorkoutEditScreen(
                 }
             } else {
                 LazyColumn(
-                    modifier            = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     items(exercises) { item ->
                         EditableRow(
-                            item     = item,
+                            item = item,
                             onRemove = { viewModel.removeExercise(item) },
                             onUpdate = { sets, reps, weight -> viewModel.updateExercise(item, sets, reps, weight) },
                         )
@@ -133,8 +133,8 @@ private fun EditableRow(
     onRemove: () -> Unit,
     onUpdate: (Int, Int, Float) -> Unit
 ) {
-    val style      = muscleGroupStyle(item.muscleGroup)
-    val context    = LocalContext.current
+    val style = muscleGroupStyle(item.muscleGroup)
+    val context = LocalContext.current
     val drawableRes = remember(item.exerciseName) { exerciseDrawableRes(context, item.exerciseName) }
 
     val gifLoader = remember {
@@ -159,7 +159,7 @@ private fun EditableRow(
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
     ) {
         Row(
-            modifier          = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 12.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(Icons.Default.DragHandle, contentDescription = null, tint = Silver, modifier = Modifier.size(20.dp))
@@ -174,18 +174,18 @@ private fun EditableRow(
             ) {
                 if (drawableRes != 0) {
                     AsyncImage(
-                        model              = ImageRequest.Builder(context).data(drawableRes).build(),
-                        imageLoader        = gifLoader,
+                        model = ImageRequest.Builder(context).data(drawableRes).build(),
+                        imageLoader = gifLoader,
                         contentDescription = item.exerciseName,
-                        contentScale       = ContentScale.Crop,
-                        modifier           = Modifier.fillMaxSize()
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
                     )
                 } else {
                     Icon(
-                        imageVector        = style.icon,
+                        imageVector = style.icon,
                         contentDescription = item.muscleGroup,
-                        tint               = White,
-                        modifier           = Modifier.size(20.dp)
+                        tint = White,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
@@ -204,8 +204,8 @@ private fun EditableRow(
                     Spacer(modifier = Modifier.size(28.dp))
 
                     Text(
-                        text     = item.exerciseName,
-                        style    = MaterialTheme.typography.titleSmall.copy(color = White, fontWeight = FontWeight.SemiBold),
+                        text = item.exerciseName,
+                        style = MaterialTheme.typography.titleSmall.copy(color = White, fontWeight = FontWeight.SemiBold),
                         textAlign = TextAlign.Center,
                         modifier = Modifier.weight(1f)
                     )

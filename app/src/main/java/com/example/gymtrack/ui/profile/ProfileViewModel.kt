@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 sealed class ProfileLoadState {
-    object Loading   : ProfileLoadState()
+    object Loading : ProfileLoadState()
     object NoProfile : ProfileLoadState()
     data class HasProfile(val user: UserEntity) : ProfileLoadState()
 }

@@ -47,18 +47,18 @@ fun ProfileEditScreen(
     val userProfile by viewModel.userProfile.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    var firstName         by remember { mutableStateOf("") }
-    var weight            by remember { mutableStateOf("") }
-    var height            by remember { mutableStateOf("") }
+    var firstName by remember { mutableStateOf("") }
+    var weight by remember { mutableStateOf("") }
+    var height by remember { mutableStateOf("") }
     var profilePictureUri by remember { mutableStateOf<String?>(null) }
 
     var fieldsInitialized by remember { mutableStateOf(false) }
     LaunchedEffect(userProfile) {
         if (!fieldsInitialized) {
             userProfile?.let {
-                firstName         = it.firstName
-                weight            = it.weight.toString()
-                height            = it.height.toString()
+                firstName = it.firstName
+                weight = it.weight.toString()
+                height = it.height.toString()
                 profilePictureUri = it.profilePictureUri
                 fieldsInitialized = true
             }
@@ -126,18 +126,18 @@ fun ProfileEditContent(
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState) { data ->
                 Snackbar(
-                    snackbarData   = data,
+                    snackbarData = data,
                     containerColor = MahoganyRed,
-                    contentColor   = White
+                    contentColor = White
                 )
             }
         },
         bottomBar = {
             BottomNavigationBar(
-                selectedTab   = BottomNavTab.PROFILE,
+                selectedTab = BottomNavTab.PROFILE,
                 onTabSelected = { tab ->
                     when (tab) {
-                        BottomNavTab.HISTORY      -> onHistoryClick()
+                        BottomNavTab.HISTORY -> onHistoryClick()
                         BottomNavTab.NEW_TRAINING -> onAddClick()
                         else -> {}
                     }
@@ -158,9 +158,9 @@ fun ProfileEditContent(
             Spacer(modifier = Modifier.height(16.dp))
 
             Image(
-                painter            = painterResource(id = R.drawable.gymtrack_logo_white),
+                painter = painterResource(id = R.drawable.gymtrack_logo_white),
                 contentDescription = "GymTrack Logo",
-                modifier           = Modifier
+                modifier = Modifier
                     .width(290.dp)
                     .height(220.dp)
             )
@@ -177,17 +177,17 @@ fun ProfileEditContent(
             ) {
                 if (profilePictureUri != null) {
                     AsyncImage(
-                        model              = profilePictureUri,
+                        model = profilePictureUri,
                         contentDescription = "Profile picture",
-                        contentScale       = ContentScale.Crop,
-                        modifier           = Modifier.fillMaxSize()
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
                     )
                 } else {
                     Icon(
-                        imageVector        = Icons.Default.AccountCircle,
+                        imageVector = Icons.Default.AccountCircle,
                         contentDescription = "Profile picture",
-                        tint               = Color(0xFF555555),
-                        modifier           = Modifier.size(90.dp)
+                        tint = Color(0xFF555555),
+                        modifier = Modifier.size(90.dp)
                     )
                 }
             }
@@ -195,16 +195,16 @@ fun ProfileEditContent(
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedButton(
-                onClick        = { onPickImage() },
-                shape          = RoundedCornerShape(8.dp),
-                colors         = ButtonDefaults.outlinedButtonColors(contentColor = MahoganyRed),
-                border         = androidx.compose.foundation.BorderStroke(1.5.dp, MahoganyRed),
+                onClick = { onPickImage() },
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = MahoganyRed),
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, MahoganyRed),
                 contentPadding = PaddingValues(horizontal = 14.dp, vertical = 4.dp)
             ) {
                 Text(
-                    text       = "Change picture",
-                    color      = MahoganyRed,
-                    fontSize   = 13.sp,
+                    text = "Change picture",
+                    color = MahoganyRed,
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold
                 )
             }
@@ -212,39 +212,39 @@ fun ProfileEditContent(
             Spacer(modifier = Modifier.height(20.dp))
 
             Text(
-                text       = "Edit your profile:",
-                color      = White,
-                fontSize   = 20.sp,
+                text = "Edit your profile:",
+                color = White,
+                fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                textAlign  = TextAlign.Center
+                textAlign = TextAlign.Center
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             ProfileEditField(
-                value         = firstName,
+                value = firstName,
                 onValueChange = onFirstNameChange,
-                placeholder   = "First Name"
+                placeholder = "First Name"
             )
             Spacer(modifier = Modifier.height(12.dp))
             ProfileEditField(
-                value         = weight,
+                value = weight,
                 onValueChange = onWeightChange,
-                placeholder   = "Weight (kg)"
+                placeholder = "Weight (kg)"
             )
             Spacer(modifier = Modifier.height(12.dp))
             ProfileEditField(
-                value         = height,
+                value = height,
                 onValueChange = onHeightChange,
-                placeholder   = "Height (cm)"
+                placeholder = "Height (cm)"
             )
 
             if (errorMessage.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text      = errorMessage,
-                    color     = StrawberryRed,
-                    fontSize  = 14.sp,
+                    text = errorMessage,
+                    color = StrawberryRed,
+                    fontSize = 14.sp,
                     textAlign = TextAlign.Center
                 )
             }
@@ -255,9 +255,9 @@ fun ProfileEditContent(
                 onClick = {
                     val normalizedWeight = weight.replace(',', '.')
                     when {
-                        firstName.isBlank()                      -> errorMessage = "Please enter your first name."
+                        firstName.isBlank() -> errorMessage = "Please enter your first name."
                         normalizedWeight.toFloatOrNull() == null -> errorMessage = "Please enter a valid weight."
-                        height.toIntOrNull() == null             -> errorMessage = "Please enter a valid height."
+                        height.toIntOrNull() == null -> errorMessage = "Please enter a valid height."
                         else -> {
                             errorMessage = ""
                             onSubmit()
@@ -271,21 +271,21 @@ fun ProfileEditContent(
                 shape  = RoundedCornerShape(28.dp)
             ) {
                 Row(
-                    verticalAlignment     = Alignment.CenterVertically,
+                    verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text       = "Submit changes",
-                        color      = White,
-                        fontSize   = 18.sp,
+                        text = "Submit changes",
+                        color = White,
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.ExtraBold
                     )
                     Spacer(modifier = Modifier.width(10.dp))
                     Icon(
-                        imageVector        = Icons.AutoMirrored.Filled.ArrowForward,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = null,
-                        tint               = White,
-                        modifier           = Modifier.size(20.dp)
+                        tint = White,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
@@ -302,13 +302,13 @@ private fun ProfileEditField(
     placeholder: String
 ) {
     TextField(
-        value         = value,
+        value = value,
         onValueChange = onValueChange,
-        placeholder   = {
+        placeholder = {
             Text(
-                text      = placeholder,
-                color     = Color.Gray,
-                modifier  = Modifier.fillMaxWidth(),
+                text = placeholder,
+                color = Color.Gray,
+                modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
         },
@@ -317,13 +317,13 @@ private fun ProfileEditField(
             .height(56.dp)
             .clip(RoundedCornerShape(12.dp)),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor   = DustGrey,
+            focusedContainerColor = DustGrey,
             unfocusedContainerColor = DustGrey,
-            focusedBorderColor      = Color.Transparent,
-            unfocusedBorderColor    = Color.Transparent,
-            cursorColor             = Black,
-            focusedTextColor        = Black,
-            unfocusedTextColor      = Color(0xFF444444)
+            focusedBorderColor = Color.Transparent,
+            unfocusedBorderColor = Color.Transparent,
+            cursorColor = Black,
+            focusedTextColor = Black,
+            unfocusedTextColor = Color(0xFF444444)
         ),
         textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Center),
         singleLine = true
@@ -347,8 +347,8 @@ fun ProfileEditPreview() {
     GymTrackTheme {
         ProfileEditContent(
             firstName = "Jak Kowalski",
-            weight    = "86.7",
-            height    = "187"
+            weight = "86.7",
+            height = "187"
         )
     }
 }
